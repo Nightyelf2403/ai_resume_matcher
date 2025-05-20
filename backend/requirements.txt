@@ -4,4 +4,4 @@ pydantic
 transformers
 sentence-transformers
 python-multipart
-
+pymupdf
