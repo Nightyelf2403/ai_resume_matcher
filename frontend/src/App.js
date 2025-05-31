@@ -41,13 +41,9 @@ function App() {
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        "https://ai-resume-matcher-6brq.onrender.com/match/",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await axios.post("/api/match/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setResult(response.data);
     } catch (err) {
       setError("An error occurred. Please try again later.");
@@ -60,7 +56,7 @@ function App() {
     const message = `Rating: ${rating || "No emoji"}\nFeedback: ${feedbackText}`;
     try {
       await axios.post("https://formspree.io/f/moqgjgvy", { message });
-      await axios.post("https://ai-resume-matcher-6brq.onrender.com/feedback", {
+      await axios.post("/api/feedback", {
         rating,
         feedback: feedbackText,
       });
@@ -207,7 +203,7 @@ function App() {
                 key={index}
                 type="button"
                 onClick={() => setRating(emoji)}
-                className={`transform hover:scale-125 transition duration-200 rounded-full px-2 py-1 border-2 ${rating === emoji ? "border-indigo-600" : "border-transparent"}`}
+                className={`transform hover:scale-125 transition duration-200 rounded-full px-2 py-1 border-2 ${rating === emoji ? "border-indigo-600 bg-indigo-100" : "border-transparent"}`}
               >
                 {emoji}
               </button>
