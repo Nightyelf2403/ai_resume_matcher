@@ -1,3 +1,4 @@
+# ✅ backend/app/main.py
 from fastapi import FastAPI, File, UploadFile, Form, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,7 +11,6 @@ load_dotenv()
 
 app = FastAPI()
 
-# CORS config for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://ai-resume-match-gamma.vercel.app"],
