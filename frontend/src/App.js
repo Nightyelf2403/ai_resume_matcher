@@ -10,6 +10,8 @@ function App() {
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [rating, setRating] = useState(null);
 
   const themes = {
     light: "bg-white text-gray-800",
@@ -53,6 +55,20 @@ function App() {
       setError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async () => {
+    const message = `Rating: ${rating || "No emoji"}\nFeedback: ${feedbackText}`;
+    try {
+      await axios.post("https://formspree.io/f/moqgjgvy", {
+        message,
+      });
+      alert("Thanks for your feedback! 💜");
+      setFeedbackText("");
+      setRating(null);
+    } catch (err) {
+      alert("Failed to send feedback. Please try again later.");
     }
   };
 
@@ -170,8 +186,51 @@ function App() {
                 <li>Score computed based on overlap and importance of keywords.</li>
               </ul>
             </div>
+
+            {result.suggestions && (
+              <div className="mt-4">
+                <p className="font-medium text-red-600">AI Suggestions to Improve Match:</p>
+                <ul className="list-disc list-inside text-sm mt-1 text-red-500">
+                  {result.suggestions.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
+
+        {/* Feedback Section */}
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-indigo-600 mb-2">💬 Share Your Feedback</h2>
+
+          <div className="flex space-x-4 text-2xl mb-3">
+            {["😡", "😐", "🙂", "😃", "😍"].map((emoji, index) => (
+              <button
+                key={index}
+                className={`transform hover:scale-125 transition duration-200 ${rating === emoji ? "opacity-100" : "opacity-50"}`}
+                onClick={() => setRating(emoji)}
+                type="button"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            rows="3"
+            placeholder="Let us know how we can improve or what you loved!"
+            className="block w-full border border-gray-300 p-2 rounded-lg mb-2"
+            value={feedbackText}
+            onChange={(e) => setFeedbackText(e.target.value)}
+          ></textarea>
+          <button
+            onClick={handleFeedbackSubmit}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+          >
+            Submit Feedback
+          </button>
+        </div>
       </div>
     </div>
   );
