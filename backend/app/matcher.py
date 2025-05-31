@@ -4,7 +4,7 @@ import fitz  # PyMuPDF
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def extract_text(file_content: bytes, filename: str):
-    if filename.endswith(".pdf"):
+    if filename.lower().endswith(".pdf"):
         with fitz.open(stream=file_content, filetype="pdf") as doc:
             return "\n".join(page.get_text() for page in doc)
     return file_content.decode()
