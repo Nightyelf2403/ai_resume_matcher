@@ -9,6 +9,13 @@ function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const themes = {
+    light: "bg-white text-gray-800",
+    dark: "bg-gray-900 text-white",
+  };
+  const [theme, setTheme] = useState("light");
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -33,6 +40,7 @@ function App() {
     formData.append("job_description", jobDesc);
 
     try {
+      setLoading(true);
       const response = await axios.post(
         "https://ai-resume-matcher.onrender.com/match/",
         formData,
@@ -43,15 +51,25 @@ function App() {
       setResult(response.data);
     } catch (err) {
       setError("An error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans">
-      <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-2xl p-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 text-indigo-600">
-          AI Resume Matcher 🔍📄
-        </h1>
+    <div className={`min-h-screen transition-all duration-500 p-4 md:p-8 font-sans ${themes[theme]}`}>
+      <div className="max-w-2xl mx-auto shadow-xl rounded-2xl p-6 bg-opacity-90 backdrop-blur-md">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-indigo-600">
+            AI Resume Matcher 🔍📄
+          </h1>
+          <button
+            className="text-sm text-indigo-600 underline"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          >
+            Toggle Theme
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-semibold mb-1">Upload Resume (PDF, &lt; 5MB)</label>
@@ -66,7 +84,7 @@ function App() {
                 dragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
               }`}
             >
-              <p className="text-sm text-gray-600 text-center">
+              <p className="text-sm text-center">
                 {resumeFile ? resumeFile.name : "Drag and drop your PDF here or click to select"}
               </p>
               <input
@@ -91,13 +109,18 @@ function App() {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition duration-200"
           >
-            Match Resume
+            {loading ? "Matching..." : "Match Resume"}
           </button>
 
           {error && <p className="text-red-600 mt-2 font-medium">{error}</p>}
         </form>
+
+        {loading && (
+          <div className="mt-4 text-center animate-pulse text-indigo-500 font-medium">Analyzing Resume...</div>
+        )}
 
         {result && (
           <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-indigo-200">
@@ -140,7 +163,7 @@ function App() {
 
             <div className="mt-4">
               <p className="font-medium">How This Match Was Calculated:</p>
-              <ul className="list-disc list-inside text-sm text-gray-700 mt-2">
+              <ul className="list-disc list-inside text-sm mt-2">
                 <li>Semantic similarity between resume and job description.</li>
                 <li>Keyword relevance and role match analysis.</li>
                 <li>AI embeddings using Sentence Transformers.</li>
