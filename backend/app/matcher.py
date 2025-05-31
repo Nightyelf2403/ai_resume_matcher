@@ -1,49 +1,58 @@
-from typing import List, Tuple, Dict
-from sentence_transformers import SentenceTransformer
 import fitz  # PyMuPDF
-import re
-from collections import Counter
+import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# Load sentence transformer model once
-model = SentenceTransformer('all-MiniLM-L6-v2')
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
+HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+
+HEADERS = {
+    "Authorization": f"Bearer {HF_API_TOKEN}"
+}
 
 def extract_text_from_pdf(file) -> str:
-    """Extract text from uploaded PDF file."""
     pdf = fitz.open(stream=file.file.read(), filetype="pdf")
     text = ""
     for page in pdf:
         text += page.get_text()
     pdf.close()
-    return text.strip()
+    return text
 
-def extract_keywords(text: str, top_k: int = 10) -> List[str]:
-    """Extract top-k frequent keywords from job description."""
+def get_similarity_score(resume_text, job_description):
+    payload = {
+        "inputs": {
+            "source_sentence": job_description,
+            "sentences": [resume_text]
+        }
+    }
+    response = requests.post(HF_API_URL, headers=HEADERS, json=payload)
+    if response.status_code != 200:
+        raise Exception("Hugging Face API Error:", response.text)
+
+    score = response.json()[0] * 100  # Score is a float between 0 and 1
+    return round(score, 2)
+
+def extract_keywords(text: str, top_k: int = 10):
+    from collections import Counter
+    import re
     words = re.findall(r'\b[a-zA-Z]{4,}\b', text.lower())
-    filtered = [w for w in words if w not in {'with', 'from', 'that', 'your', 'will', 'have'}]
-    common = Counter(filtered).most_common(top_k)
+    common = Counter(words).most_common(top_k)
     return [word for word, _ in common]
 
-def compute_similarity(resume_text: str, job_desc: str, keywords: List[str]) -> Tuple[float, List[str]]:
-    """Compute percentage of matching keywords."""
-    matched_keywords = [kw for kw in keywords if kw.lower() in resume_text.lower()]
-    score = len(matched_keywords) / len(keywords) * 100 if keywords else 0
-    return round(score, 2), matched_keywords
-
-def generate_ai_suggestions(keywords: List[str], matched: List[str]) -> List[str]:
-    """Return improvement suggestions for unmatched keywords."""
-    unmatched = set(keywords) - set(matched)
-    return [f"Consider adding the keyword '{kw}' to improve your match." for kw in unmatched]
-
-def match_resume(file, job_description: str) -> Dict:
-    """Main match function."""
+def match_resume(file, job_description: str):
     resume_text = extract_text_from_pdf(file)
+    score = get_similarity_score(resume_text, job_description)
     keywords = extract_keywords(job_description)
-    score, matched = compute_similarity(resume_text, job_description, keywords)
-    suggestions = generate_ai_suggestions(keywords, matched)
+    matched = [kw for kw in keywords if kw.lower() in resume_text.lower()]
 
     return {
         "match_score": score,
         "matched_keywords": matched,
-        "total_keywords": len(keywords),
-        "suggestions": suggestions
+        "total_keywords": keywords,
+        "suggestions": [
+            "Add more relevant keywords from the job description.",
+            "Tailor your experience to align with job responsibilities.",
+            "Highlight your technical and soft skills clearly."
+        ]
     }
