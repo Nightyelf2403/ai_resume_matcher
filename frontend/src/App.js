@@ -62,15 +62,11 @@ function App() {
   const handleFeedbackSubmit = async () => {
     const message = `Rating: ${rating || "No emoji"}\nFeedback: ${feedbackText}`;
     try {
-      // 1. Send to Formspree email
       await axios.post("https://formspree.io/f/moqgjgvy", { message });
-
-      // 2. Also store in backend DB (optional)
       await axios.post("https://ai-resume-matcher.onrender.com/feedback", {
         rating,
         feedback: feedbackText,
       });
-
       setShowThankYou(true);
       setTimeout(() => setShowThankYou(false), 3000);
       setFeedbackText("");
@@ -96,7 +92,7 @@ function App() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Upload Resume (PDF, &lt; 5MB)</label>
+            <label className="block font-semibold mb-1">Upload Resume (PDF, < 5MB)</label>
             <div
               onDrop={handleDrop}
               onDragOver={(e) => {
@@ -208,7 +204,6 @@ function App() {
           </div>
         )}
 
-        {/* Feedback Section */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-indigo-600 mb-2">💬 Share Your Feedback</h2>
 
