@@ -12,6 +12,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [rating, setRating] = useState(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   const themes = {
     light: "bg-white text-gray-800",
@@ -61,10 +62,17 @@ function App() {
   const handleFeedbackSubmit = async () => {
     const message = `Rating: ${rating || "No emoji"}\nFeedback: ${feedbackText}`;
     try {
-      await axios.post("https://formspree.io/f/moqgjgvy", {
-        message,
+      // 1. Send to Formspree email
+      await axios.post("https://formspree.io/f/moqgjgvy", { message });
+
+      // 2. Also store in backend DB (optional)
+      await axios.post("https://ai-resume-matcher.onrender.com/feedback", {
+        rating,
+        feedback: feedbackText,
       });
-      alert("Thanks for your feedback! 💜");
+
+      setShowThankYou(true);
+      setTimeout(() => setShowThankYou(false), 3000);
       setFeedbackText("");
       setRating(null);
     } catch (err) {
@@ -230,6 +238,12 @@ function App() {
           >
             Submit Feedback
           </button>
+
+          {showThankYou && (
+            <div className="mt-4 text-green-600 font-medium animate-bounce">
+              🎉 Thanks for your feedback!
+            </div>
+          )}
         </div>
       </div>
     </div>
