@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://ai-resume-matcher-6brq.onrender.com/$1"
+    }
+  ]
+}
