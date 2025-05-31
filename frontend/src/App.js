@@ -45,7 +45,7 @@ function App() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://ai-resume-matcher.onrender.com/match/",
+        "https://ai-resume-matcher-6brq.onrender.com/match/",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -63,7 +63,7 @@ function App() {
     const message = `Rating: ${rating || "No emoji"}\nFeedback: ${feedbackText}`;
     try {
       await axios.post("https://formspree.io/f/moqgjgvy", { message });
-      await axios.post("https://ai-resume-matcher.onrender.com/feedback", {
+      await axios.post("https://ai-resume-matcher-6brq.onrender.com/feedback", {
         rating,
         feedback: feedbackText,
       });
