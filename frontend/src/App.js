@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
+import "./App.css";
 
 function App() {
   const [resume, setResume] = useState(null);
@@ -9,7 +10,7 @@ function App() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!resume || !job) return alert("Please upload a resume and paste a job description");
+    if (!resume || !job) return alert("Please upload a resume and enter a job description.");
 
     const formData = new FormData();
     formData.append("resume", resume);
@@ -17,34 +18,32 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await axios.post("https://ai-resume-matcher-6brq.onrender.com/", formData); // 🔁 Replace this with your actual Render backend URL
+      const res = await axios.post("https://ai-resume-matcher-6brq.onrender.com/match/", formData);
       setScore(res.data.match_score.toFixed(2));
     } catch (err) {
-      alert("Error matching resume. Check backend URL.");
+      alert("Error: Could not match resume. Please try again.");
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ fontFamily: "Arial", maxWidth: "600px", margin: "auto", padding: "2rem" }}>
-      <h1>🔍 AI Resume Matcher</h1>
-      <p>Upload your resume and paste a job description to see how well they match.</p>
+    <div className="App">
+      <h1>🧠 AI Resume Matcher</h1>
       <form onSubmit={handleUpload}>
-        <label>Upload Resume (TXT or PDF):</label><br />
-        <input type="file" onChange={e => setResume(e.target.files[0])} /><br /><br />
-
-        <label>Paste Job Description:</label><br />
-        <textarea value={job} onChange={e => setJob(e.target.value)} rows="8" cols="60" /><br /><br />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Matching..." : "Match Resume"}
-        </button>
+        <input
+          type="file"
+          accept=".pdf,.txt"
+          onChange={(e) => setResume(e.target.files[0])}
+        /><br /><br />
+        <textarea
+          placeholder="Paste job description here..."
+          rows="6"
+          value={job}
+          onChange={(e) => setJob(e.target.value)}
+        /><br /><br />
+        <button type="submit">{loading ? "Matching..." : "Match Resume"}</button>
       </form>
-      {score && (
-        <h2 style={{ marginTop: "1rem", color: "green" }}>
-          ✅ Match Score: {score * 100}%
-        </h2>
-      )}
+      {score && <h3>📝 Match Score: {score}</h3>}
     </div>
   );
 }
