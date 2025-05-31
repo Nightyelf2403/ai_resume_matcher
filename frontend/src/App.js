@@ -92,7 +92,7 @@ function App() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Upload Resume (PDF, < 5MB)</label>
+            <label className="block font-semibold mb-1">Upload Resume (PDF, {"<"} 5MB)</label>
             <div
               onDrop={handleDrop}
               onDragOver={(e) => {
