@@ -5,3 +5,5 @@ transformers
 sentence-transformers
 python-multipart
 pymupdf
+pymongo
+dnspython
