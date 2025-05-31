@@ -13,7 +13,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://ai-resume-matcher-eight.vercel.app"],
+    allow_origins=["https://ai-resume-matcher-5pczjldw5-nightyelf2403s-projects.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
