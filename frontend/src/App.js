@@ -28,6 +28,10 @@ function App() {
     }
   };
 
+  const handleFileClick = () => {
+    document.getElementById("resume-upload").click();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -53,6 +57,7 @@ function App() {
       );
       setResult(response.data);
     } catch (err) {
+      console.error("Error:", err);
       setError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
@@ -72,6 +77,7 @@ function App() {
       setFeedbackText("");
       setRating(null);
     } catch (err) {
+      console.error("Feedback error:", err);
       alert("Failed to send feedback. Please try again later.");
     }
   };
@@ -90,6 +96,7 @@ function App() {
             Toggle Theme
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-semibold mb-1">Upload Resume (PDF, {"<"} 5MB)</label>
@@ -100,6 +107,7 @@ function App() {
                 setDragOver(true);
               }}
               onDragLeave={() => setDragOver(false)}
+              onClick={handleFileClick}
               className={`w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition ${
                 dragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
               }`}
@@ -163,14 +171,14 @@ function App() {
                 High Confidence
               </span>
               <p className="text-sm mt-2">
-                Matched <strong>{result.matching_keywords.length}</strong> out of <strong>{result.total_keywords}</strong> relevant keywords.
+                Matched <strong>{result.matching_keywords?.length || 0}</strong> out of <strong>{result.total_keywords || 0}</strong> relevant keywords.
               </p>
             </div>
 
             <div className="mt-4">
               <p className="font-medium">Matching Keywords:</p>
               <div className="flex flex-wrap gap-2 mt-1">
-                {result.matching_keywords.map((word, index) => (
+                {result.matching_keywords?.map((word, index) => (
                   <span
                     key={index}
                     className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
