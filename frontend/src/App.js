@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 function App() {
   const [resumeFile, setResumeFile] = useState(null);
@@ -99,26 +101,52 @@ function App() {
 
         {result && (
           <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-indigo-200">
-            <h2 className="text-lg font-semibold text-indigo-700">
-              Match Score: <span className="text-black">{result.match_percentage}%</span>
-            </h2>
-            <p className="mt-2 font-medium">Matching Keywords:</p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {result.matching_keywords.map((word, index) => (
-                <span
-                  key={index}
-                  className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
-                >
-                  {word}
-                </span>
-              ))}
+            <h2 className="text-lg font-semibold text-indigo-700 mb-2">Match Score</h2>
+            <div className="w-24 h-24 mx-auto">
+              <CircularProgressbar
+                value={result.match_percentage}
+                text={`${result.match_percentage}%`}
+                styles={buildStyles({
+                  textColor: "#4f46e5",
+                  pathColor: "#4f46e5",
+                  trailColor: "#d1d5db",
+                  textSize: "16px",
+                })}
+              />
             </div>
-            <p className="mt-4 font-medium">Explanation:</p>
-            <ul className="list-disc list-inside text-sm text-gray-700">
-              {result.explanation.map((line, index) => (
-                <li key={index}>{line}</li>
-              ))}
-            </ul>
+
+            <div className="mt-4">
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                High Confidence
+              </span>
+              <p className="text-sm mt-2">
+                Matched <strong>{result.matching_keywords.length}</strong> out of <strong>{result.total_keywords}</strong> relevant keywords.
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <p className="font-medium">Matching Keywords:</p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {result.matching_keywords.map((word, index) => (
+                  <span
+                    key={index}
+                    className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="font-medium">How This Match Was Calculated:</p>
+              <ul className="list-disc list-inside text-sm text-gray-700 mt-2">
+                <li>Semantic similarity between resume and job description.</li>
+                <li>Keyword relevance and role match analysis.</li>
+                <li>AI embeddings using Sentence Transformers.</li>
+                <li>Score computed based on overlap and importance of keywords.</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>
