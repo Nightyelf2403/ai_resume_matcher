@@ -6,6 +6,15 @@ function App() {
   const [jobDesc, setJobDesc] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setResumeFile(e.dataTransfer.files[0]);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,49 +45,83 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <h1 className="header">AI Resume Matcher</h1>
-      <form onSubmit={handleSubmit} className="form-section">
-        <label className="label">Upload Resume (PDF, &lt; 5MB)</label>
-        <input
-          className="input"
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setResumeFile(e.target.files[0])}
-        />
-
-        <label className="label">Paste Job Description</label>
-        <textarea
-          className="input"
-          rows="5"
-          value={jobDesc}
-          onChange={(e) => setJobDesc(e.target.value)}
-        ></textarea>
-
-        <button className="button" type="submit">
-          Match Resume
-        </button>
-
-        {error && <p className="text-red-600 mt-2">{error}</p>}
-      </form>
-
-      {result && (
-        <div className="result-box">
-          <h2 className="font-semibold text-lg">Match: {result.match_percentage}%</h2>
-          <p className="mt-2 mb-1 font-medium">Matching Keywords:</p>
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans">
+      <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-2xl p-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 text-indigo-600">
+          AI Resume Matcher 🔍📄
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            {result.matching_keywords.map((word, index) => (
-              <span key={index} className="keyword-match">{word}</span>
-            ))}
+            <label className="block font-semibold mb-1">Upload Resume (PDF, &lt; 5MB)</label>
+            <div
+              onDrop={handleDrop}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              className={`w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition ${
+                dragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
+              }`}
+            >
+              <p className="text-sm text-gray-600 text-center">
+                {resumeFile ? resumeFile.name : "Drag and drop your PDF here or click to select"}
+              </p>
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setResumeFile(e.target.files[0])}
+                className="hidden"
+                id="resume-upload"
+              />
+            </div>
           </div>
-          <p className="mt-4 mb-1 font-medium">Explanation:</p>
-          <ul className="list-disc list-inside text-sm">
-            {result.explanation.map((line, index) => (
-              <li key={index}>{line}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+
+          <div>
+            <label className="block font-semibold mb-1">Paste Job Description</label>
+            <textarea
+              rows="5"
+              value={jobDesc}
+              onChange={(e) => setJobDesc(e.target.value)}
+              className="block w-full border border-gray-300 p-2 rounded-lg"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition duration-200"
+          >
+            Match Resume
+          </button>
+
+          {error && <p className="text-red-600 mt-2 font-medium">{error}</p>}
+        </form>
+
+        {result && (
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-indigo-200">
+            <h2 className="text-lg font-semibold text-indigo-700">
+              Match Score: <span className="text-black">{result.match_percentage}%</span>
+            </h2>
+            <p className="mt-2 font-medium">Matching Keywords:</p>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {result.matching_keywords.map((word, index) => (
+                <span
+                  key={index}
+                  className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
+            <p className="mt-4 font-medium">Explanation:</p>
+            <ul className="list-disc list-inside text-sm text-gray-700">
+              {result.explanation.map((line, index) => (
+                <li key={index}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
