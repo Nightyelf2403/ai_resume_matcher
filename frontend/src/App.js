@@ -17,7 +17,7 @@ function App() {
 
     setLoading(true);
     try {
-      const res = await axios.post("https://your-backend-url.onrender.com/match/", formData); // 🔁 Replace this with your actual Render backend URL
+      const res = await axios.post("https://ai-resume-matcher-6brq.onrender.com/", formData); // 🔁 Replace this with your actual Render backend URL
       setScore(res.data.match_score.toFixed(2));
     } catch (err) {
       alert("Error matching resume. Check backend URL.");
