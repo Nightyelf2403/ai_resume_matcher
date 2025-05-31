@@ -1,10 +1,11 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from app.matcher import match_resume_to_job
+from fastapi.responses import JSONResponse
+from app.matcher import match_resume
 
 app = FastAPI()
 
-# ✅ Allow only your frontend domain
+# Allow CORS from Vercel frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://ai-resume-match-gamma.vercel.app"],
@@ -15,12 +16,16 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "AI Resume Matcher backend is live ✅"}
+    return {"message": "AI Resume Matcher API is live!"}
 
 @app.post("/match/")
-async def match_resume(resume: UploadFile = File(...), job_description: str = Form(...)):
+async def match(file: UploadFile = File(...), job_description: str = Form(...)):
     try:
-        score = match_resume_to_job(resume.file, job_description)
-        return {"match_score": score}
+        result = match_resume(file, job_description)
+        return JSONResponse(content={
+            "match_percentage": result["match_score"],
+            "matching_keywords": result["matched_keywords"],
+            "job_keywords": result["total_keywords"]
+        })
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(status_code=500, content={"error": str(e)})
