@@ -1,14 +1,16 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import Request
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pymongo import MongoClient
 import os
+import secrets
+
 from app.matcher import match_resume
 
 app = FastAPI()
 
-# CORS for Vercel frontend
+# CORS for Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://ai-resume-match-gamma.vercel.app"],
@@ -17,15 +19,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB setup using secret
-mongo_uri = os.getenv("MONGO_URI")
-mongo_client = MongoClient(mongo_uri)
-db = mongo_client["resume_matcher"]
-feedback_collection = db["feedback"]
+# MongoDB Setup
+MONGO_URL = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URL)
+db = client["ai_resume_matcher"]
+feedback_collection = db["feedbacks"]
+
+# Basic Auth for Admin
+security = HTTPBasic()
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secretpass")
+
 
 @app.get("/")
 def read_root():
     return {"message": "AI Resume Matcher API is live!"}
+
 
 @app.post("/match/")
 async def match(file: UploadFile = File(...), job_description: str = Form(...)):
@@ -39,24 +48,29 @@ async def match(file: UploadFile = File(...), job_description: str = Form(...)):
             "match_percentage": result["match_score"],
             "matching_keywords": result["matched_keywords"],
             "total_keywords": result["total_keywords"],
-            "suggestions": result.get("suggestions", []),
+            "suggestions": result["suggestions"],
             "explanation": explanation
         })
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+
 @app.post("/feedback")
-async def submit_feedback(request: Request):
+async def store_feedback(rating: str = Form(...), feedback: str = Form(...)):
     try:
-        data = await request.json()
-        rating = data.get("rating")
-        feedback_text = data.get("feedback")
-
-        feedback_collection.insert_one({
-            "rating": rating,
-            "feedback": feedback_text
-        })
-
-        return {"message": "Feedback stored successfully."}
+        feedback_collection.insert_one({"rating": rating, "feedback": feedback})
+        return {"message": "Feedback received!"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/feedbacks")
+def get_feedbacks(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, ADMIN_USERNAME)
+    correct_password = secrets.compare_digest(credentials.password, ADMIN_PASSWORD)
+
+    if not (correct_username and correct_password):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    feedbacks = list(feedback_collection.find({}, {"_id": 0}))
+    return feedbacks
