@@ -14,11 +14,8 @@ function App() {
   const [rating, setRating] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
 
-  const themes = {
-    light: "bg-white text-gray-800",
-    dark: "bg-gray-900 text-white",
-  };
   const [theme, setTheme] = useState("light");
+  const isDark = theme === "dark";
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -26,10 +23,6 @@ function App() {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       setResumeFile(e.dataTransfer.files[0]);
     }
-  };
-
-  const handleFileClick = () => {
-    document.getElementById("resume-upload").click();
   };
 
   const handleSubmit = async (e) => {
@@ -57,7 +50,6 @@ function App() {
       );
       setResult(response.data);
     } catch (err) {
-      console.error("Error:", err);
       setError("An error occurred. Please try again later.");
     } finally {
       setLoading(false);
@@ -77,21 +69,18 @@ function App() {
       setFeedbackText("");
       setRating(null);
     } catch (err) {
-      console.error("Feedback error:", err);
       alert("Failed to send feedback. Please try again later.");
     }
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-500 p-4 md:p-8 font-sans ${themes[theme]}`}>
-      <div className="max-w-2xl mx-auto shadow-xl rounded-2xl p-6 bg-opacity-90 backdrop-blur-md">
+    <div className={`min-h-screen transition-all duration-500 p-4 md:p-8 font-sans ${isDark ? "bg-gray-900 text-white" : "bg-white text-gray-800"}`}>
+      <div className="max-w-2xl mx-auto shadow-2xl rounded-2xl p-6 bg-opacity-90 backdrop-blur-md border border-indigo-300">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-indigo-600">
-            AI Resume Matcher 🔍📄
-          </h1>
+          <h1 className="text-3xl font-bold text-indigo-600">AI Resume Matcher 🔍📄</h1>
           <button
-            className="text-sm text-indigo-600 underline"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            className="text-sm px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+            onClick={() => setTheme(isDark ? "light" : "dark")}
           >
             Toggle Theme
           </button>
@@ -99,7 +88,7 @@ function App() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Upload Resume (PDF, {"<"} 5MB)</label>
+            <label className="block font-semibold mb-1">Upload Resume (PDF, &lt; 5MB)</label>
             <div
               onDrop={handleDrop}
               onDragOver={(e) => {
@@ -107,14 +96,10 @@ function App() {
                 setDragOver(true);
               }}
               onDragLeave={() => setDragOver(false)}
-              onClick={handleFileClick}
-              className={`w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition ${
-                dragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"
-              }`}
+              className={`w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition ${dragOver ? "border-indigo-500 bg-indigo-50" : "border-gray-300"}`}
+              onClick={() => document.getElementById("resume-upload").click()}
             >
-              <p className="text-sm text-center">
-                {resumeFile ? resumeFile.name : "Drag and drop your PDF here or click to select"}
-              </p>
+              <p className="text-sm text-center">{resumeFile ? resumeFile.name : "Drag and drop your PDF here or click to select"}</p>
               <input
                 type="file"
                 accept=".pdf"
@@ -147,7 +132,9 @@ function App() {
         </form>
 
         {loading && (
-          <div className="mt-4 text-center animate-pulse text-indigo-500 font-medium">Analyzing Resume...</div>
+          <div className="mt-4 text-center animate-pulse text-indigo-500 font-medium">
+            Analyzing Resume...
+          </div>
         )}
 
         {result && (
@@ -171,14 +158,14 @@ function App() {
                 High Confidence
               </span>
               <p className="text-sm mt-2">
-                Matched <strong>{result.matching_keywords?.length || 0}</strong> out of <strong>{result.total_keywords || 0}</strong> relevant keywords.
+                Matched <strong>{result.matching_keywords.length}</strong> out of <strong>{result.total_keywords}</strong> relevant keywords.
               </p>
             </div>
 
             <div className="mt-4">
               <p className="font-medium">Matching Keywords:</p>
               <div className="flex flex-wrap gap-2 mt-1">
-                {result.matching_keywords?.map((word, index) => (
+                {result.matching_keywords.map((word, index) => (
                   <span
                     key={index}
                     className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
@@ -214,14 +201,13 @@ function App() {
 
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-indigo-600 mb-2">💬 Share Your Feedback</h2>
-
           <div className="flex space-x-4 text-2xl mb-3">
             {["😡", "😐", "🙂", "😃", "😍"].map((emoji, index) => (
               <button
                 key={index}
-                className={`transform hover:scale-125 transition duration-200 ${rating === emoji ? "opacity-100" : "opacity-50"}`}
-                onClick={() => setRating(emoji)}
                 type="button"
+                onClick={() => setRating(emoji)}
+                className={`transform hover:scale-125 transition duration-200 rounded-full px-2 py-1 border-2 ${rating === emoji ? "border-indigo-600" : "border-transparent"}`}
               >
                 {emoji}
               </button>
