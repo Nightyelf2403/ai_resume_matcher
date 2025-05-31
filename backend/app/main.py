@@ -1,8 +1,14 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from app.matcher import match_resume_to_job
 
-app = FastAPI()  # ✅ This line defines `app`
+app = FastAPI()
 
+# ✅ Health check route
+@app.get("/")
+def read_root():
+    return {"message": "AI Resume Matcher is running 🚀"}
+
+# ✅ Resume match endpoint
 @app.post("/match/")
 async def match_resume(resume: UploadFile = File(...), job_description: str = Form(...)):
     content = await resume.read()
