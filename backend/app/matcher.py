@@ -1,7 +1,13 @@
 from sentence_transformers import SentenceTransformer, util
 import fitz  # PyMuPDF
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        model = SentenceTransformer("distilbert-base-nli-stsb-mean-tokens")  # Lighter model
+    return model
 
 def extract_text(file_content: bytes, filename: str):
     if filename.lower().endswith(".pdf"):
@@ -11,6 +17,7 @@ def extract_text(file_content: bytes, filename: str):
 
 def match_resume_to_job(resume_bytes: bytes, filename: str, job_description: str):
     resume_text = extract_text(resume_bytes, filename)
+    model = get_model()
     embeddings = model.encode([resume_text, job_description], convert_to_tensor=True)
     similarity = util.pytorch_cos_sim(embeddings[0], embeddings[1])
     return float(similarity.item())
