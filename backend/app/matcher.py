@@ -1,3 +1,4 @@
+# ✅ backend/app/matcher.py
 import fitz  # PyMuPDF
 import requests
 import os
@@ -5,8 +6,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
+if not HF_API_TOKEN:
+    raise ValueError("HF_API_TOKEN is not set")
 
+HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
 HEADERS = {
     "Authorization": f"Bearer {HF_API_TOKEN}"
 }
@@ -30,7 +33,7 @@ def get_similarity_score(resume_text, job_description):
     if response.status_code != 200:
         raise Exception("Hugging Face API Error:", response.text)
 
-    score = response.json()[0] * 100  # Score is a float between 0 and 1
+    score = response.json()['score'] * 100 if isinstance(response.json(), dict) else response.json()[0] * 100
     return round(score, 2)
 
 def extract_keywords(text: str, top_k: int = 10):
