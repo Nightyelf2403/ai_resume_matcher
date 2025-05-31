@@ -7,3 +7,4 @@ python-multipart
 pymupdf
 pymongo
 dnspython
+python-dotenv
