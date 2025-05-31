@@ -3,12 +3,11 @@ from app.matcher import match_resume_to_job
 
 app = FastAPI()
 
-# ✅ Health check route
+# ✅ Add this
 @app.get("/")
 def read_root():
-    return {"message": "AI Resume Matcher is running 🚀"}
+    return {"message": "✅ AI Resume Matcher is live and running!"}
 
-# ✅ Resume match endpoint
 @app.post("/match/")
 async def match_resume(resume: UploadFile = File(...), job_description: str = Form(...)):
     content = await resume.read()
