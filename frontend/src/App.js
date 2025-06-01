@@ -13,9 +13,20 @@ function App() {
   const [feedbackText, setFeedbackText] = useState("");
   const [rating, setRating] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
-
   const [theme, setTheme] = useState("light");
+
   const isDark = theme === "dark";
+
+  const toggleTheme = () => {
+    const root = document.getElementById("html-root");
+    if (theme === "light") {
+      root.classList.add("dark");
+      setTheme("dark");
+    } else {
+      root.classList.remove("dark");
+      setTheme("light");
+    }
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -41,7 +52,7 @@ function App() {
 
     try {
       setLoading(true);
-      const response = await axios.post("/api/match/", formData, {
+      const response = await axios.post("/api/match", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setResult(response.data);
@@ -76,7 +87,7 @@ function App() {
           <h1 className="text-3xl font-bold text-indigo-600">AI Resume Matcher 🔍📄</h1>
           <button
             className="text-sm px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
-            onClick={() => setTheme(isDark ? "light" : "dark")}
+            onClick={toggleTheme}
           >
             Toggle Theme
           </button>
@@ -203,7 +214,7 @@ function App() {
                 key={index}
                 type="button"
                 onClick={() => setRating(emoji)}
-                className={`transform hover:scale-125 transition duration-200 rounded-full px-2 py-1 border-2 ${rating === emoji ? "border-indigo-600 bg-indigo-100" : "border-transparent"}`}
+                className={`transform hover:scale-125 transition duration-200 rounded-full px-2 py-1 border-2 ${rating === emoji ? "border-indigo-600" : "border-transparent"}`}
               >
                 {emoji}
               </button>
