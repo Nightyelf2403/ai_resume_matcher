@@ -1,13 +1,6 @@
-
 {
   "rewrites": [
-    {
-      "source": "/api/:match*",
-      "destination": "https://ai-resume-matcher-6brq.onrender.com/:match"
-    },
-    {
-      "source": "/api/:feedback*",
-      "destination": "https://ai-resume-matcher-6brq.onrender.com/:feedback"
-    }
+    { "source": "/api/match", "destination": "https://ai-resume-matcher-6brq.onrender.com/match" },
+    { "source": "/api/feedback", "destination": "https://ai-resume-matcher-6brq.onrender.com/feedback" }
   ]
 }
